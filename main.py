@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from tours import get_all_dates, get_categories, get_tour_by_name  # Исправлено
+from tours import get_all_dates, get_categories, get_tour_by_name
 from typing import List, Dict
 from pydantic import BaseModel
 import logging
@@ -13,13 +13,15 @@ app = FastAPI()
 
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app")
 allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+logger.info(f"Разрешенные источники CORS: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],  # Явно указываем методы
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 class CalendarEvent(BaseModel):
@@ -30,6 +32,7 @@ class CalendarEvent(BaseModel):
 
 @app.get("/tours/dates", response_model=List[CalendarEvent])
 async def get_tour_dates(category: str = None):
+    logger.info(f"Запрос /tours/dates с категорией: {category}")
     try:
         dates = get_all_dates()
         logger.info(f"Получено дат: {len(dates)}")
@@ -66,9 +69,10 @@ async def get_tour_dates(category: str = None):
 
 @app.get("/tours/categories", response_model=List[str])
 async def get_tour_categories():
+    logger.info("Запрос /tours/categories")
     try:
         categories = get_categories()
-        logger.info(f"Получено категорий: {len(categories)}")
+        logger.info(f"Получено категорий: {len(categories)}, категории: {categories}")
         return categories
     except Exception as e:
         logger.error(f"Ошибка в /tours/categories: {e}")
