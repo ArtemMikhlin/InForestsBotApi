@@ -7,22 +7,51 @@ from pydantic import BaseModel
 import logging
 import os
 
-logging.basicBasicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app")
-allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+allowed_origins = [
+    "https://inforestsbot-calendar.vercel.app",
+    "http://localhost:8000"
+]
 logger.info(f"Разрешенные источники CORS: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+@app.options("/tours/categories")
+async def options_categories():
+    logger.info("Получен запрос OPTIONS для /tours/categories")
+    return JSONResponse(
+        status_code=200,
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:8000",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
+@app.options("/tours/dates")
+async def options_dates():
+    logger.info("Получен запрос OPTIONS для /tours/dates")
+    return JSONResponse(
+        status_code=200,
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:8000",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 class CalendarEvent(BaseModel):
     title: str
@@ -30,18 +59,9 @@ class CalendarEvent(BaseModel):
     end: str
     extendedProps: Dict
 
-@app.options("/tours/dates")
-async def options_dates():
-    logger.info("OPTIONS /tours/dates")
-    return JSONResponse(status_code=200, content={})
-
-@app.options("/tours/categories")
-async def options_categories():
-    logger.info("OPTIONS /tours/categories")
-    return JSONResponse(status_code=200, content={})
-
 @app.get("/tours/dates", response_model=List[CalendarEvent])
 async def get_tour_dates(category: str = None):
+    logger.info(f"Запрос /tours/dates с категорией: {category}")
     try:
         dates = get_all_dates()
         logger.info(f"Получено дат: {len(dates)}")
@@ -71,10 +91,16 @@ async def get_tour_dates(category: str = None):
             })
         logger.info(f"Создано событий: {len(events)}")
         events.sort(key=lambda x: x["start"])
-        return events
+        return JSONResponse(
+            content=events,
+            headers={"Access-Control-Allow-Origin": "http://localhost:8000"}
+        )
     except Exception as e:
         logger.error(f"Ошибка в /tours/dates: {e}")
-        return []
+        return JSONResponse(
+            content=[],
+            headers={"Access-Control-Allow-Origin": "http://localhost:8000"}
+        )
 
 @app.get("/tours/categories", response_model=List[str])
 async def get_tour_categories():
@@ -82,7 +108,13 @@ async def get_tour_categories():
     try:
         categories = get_categories()
         logger.info(f"Получено категорий: {len(categories)}, категории: {categories}")
-        return categories
+        return JSONResponse(
+            content=categories,
+            headers={"Access-Control-Allow-Origin": "http://localhost:8000"}
+        )
     except Exception as e:
         logger.error(f"Ошибка в /tours/categories: {e}")
-        return []
+        return JSONResponse(
+            content=[],
+            headers={"Access-Control-Allow-Origin": "http://localhost:8000"}
+        )
