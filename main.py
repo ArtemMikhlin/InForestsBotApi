@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from tours import get_all_dates, get_categories, get_tour_by_name
+from fastapi.responses import JSONResponse
+from bot.data.tours import get_all_dates, get_categories, get_tour_by_name
 from typing import List, Dict
 from pydantic import BaseModel
 import logging
 import os
 
-logging.basicConfig(level=logging.INFO)
+logging.basicBasicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app,http://localhost:8000")
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app")
 allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
 logger.info(f"Разрешенные источники CORS: {allowed_origins}")
 
@@ -20,28 +20,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
-
-@app.options("/tours/categories")
-async def options_categories():
-    logger.info("Получен запрос OPTIONS для /tours/categories")
-    return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": ",".join(allowed_origins),
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "*",
-    })
-
-@app.options("/tours/dates")
-async def options_dates():
-    logger.info("Получен запрос OPTIONS для /tours/dates")
-    return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": ",".join(allowed_origins),
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "*",
-    })
 
 class CalendarEvent(BaseModel):
     title: str
@@ -49,16 +30,25 @@ class CalendarEvent(BaseModel):
     end: str
     extendedProps: Dict
 
+@app.options("/tours/dates")
+async def options_dates():
+    logger.info("OPTIONS /tours/dates")
+    return JSONResponse(status_code=200, content={})
+
+@app.options("/tours/categories")
+async def options_categories():
+    logger.info("OPTIONS /tours/categories")
+    return JSONResponse(status_code=200, content={})
+
 @app.get("/tours/dates", response_model=List[CalendarEvent])
 async def get_tour_dates(category: str = None):
-    logger.info(f"Запрос /tours/dates с категорией: {category}")
     try:
         dates = get_all_dates()
         logger.info(f"Получено дат: {len(dates)}")
         if category:
             dates = [date for date in dates if date["category"] == category]
             logger.info(f"Фильтрация по категории '{category}': {len(dates)} дат")
-       
+        
         events = []
         for date in dates:
             tour_name = date["tour_name"]
