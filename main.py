@@ -1,20 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from bot.data.tours import get_all_dates, get_categories, get_tour_by_name
+from tours import get_all_dates, get_categories, get_tour_by_name  # Исправлено
 from typing import List, Dict
 from pydantic import BaseModel
 import logging
 import os
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Добавляем CORS middleware
-# Источники берутся из переменной окружения ALLOWED_ORIGINS (через запятую)
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:8001")
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app")
 allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
 
 app.add_middleware(
@@ -39,7 +36,7 @@ async def get_tour_dates(category: str = None):
         if category:
             dates = [date for date in dates if date["category"] == category]
             logger.info(f"Фильтрация по категории '{category}': {len(dates)} дат")
-        
+       
         events = []
         for date in dates:
             tour_name = date["tour_name"]
