@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app")
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "https://inforestsbot-calendar.vercel.app,http://localhost:8000")
 allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
 logger.info(f"Разрешенные источники CORS: {allowed_origins}")
 
@@ -25,12 +25,11 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Явная обработка OPTIONS
 @app.options("/tours/categories")
 async def options_categories():
     logger.info("Получен запрос OPTIONS для /tours/categories")
     return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": allowed_origins_env,
+        "Access-Control-Allow-Origin": ",".join(allowed_origins),
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "*",
     })
@@ -39,7 +38,7 @@ async def options_categories():
 async def options_dates():
     logger.info("Получен запрос OPTIONS для /tours/dates")
     return Response(status_code=200, headers={
-        "Access-Control-Allow-Origin": allowed_origins_env,
+        "Access-Control-Allow-Origin": ",".join(allowed_origins),
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "*",
     })
