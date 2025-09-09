@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from bot.data.tours import get_all_dates, get_categories, get_tour_by_name
+from tours import get_all_dates, get_categories, get_tour_by_name
 from typing import List, Dict
 from pydantic import BaseModel
 import logging
