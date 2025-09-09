@@ -1,0 +1,14 @@
+{
+  "id": "sri_lanka_1",
+  "category": "Cерфинг",
+  "name": "Шри-Ланка",
+  "description": "Солнце, океан и серф. И целая неделя приключений на острове, где жизнь течёт иначе.",
+  "dates": [
+    {"shift": "22.11 - 30.11", "date": "2025-11-22 to 2025-11-30", "price": 120000, "places": 8},
+    {"shift": "30.11 - 07.11", "date": "2025-11-30 to 2025-12-07", "price": 110000, "places": 5}
+  ],
+  "start_location": "Шри-Ланка, аэропорт Коломбо",
+  "contact": "Пиши @sasha_zeppelin",
+  "photos": [""],
+  "videos": ["media\\srilanka\\surfing.MP4"]
+}
