@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from tours import get_all_dates, get_categories, get_tour_by_name
 from typing import List, Dict
 from pydantic import BaseModel
@@ -19,10 +20,29 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],  # Явно указываем методы
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Явная обработка OPTIONS
+@app.options("/tours/categories")
+async def options_categories():
+    logger.info("Получен запрос OPTIONS для /tours/categories")
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": allowed_origins_env,
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
+
+@app.options("/tours/dates")
+async def options_dates():
+    logger.info("Получен запрос OPTIONS для /tours/dates")
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": allowed_origins_env,
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
 
 class CalendarEvent(BaseModel):
     title: str
