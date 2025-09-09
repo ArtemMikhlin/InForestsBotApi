@@ -14,7 +14,8 @@ app = FastAPI()
 
 allowed_origins = [
     "https://inforestsbot-calendar.vercel.app",
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "https://calendar-app-sbrx.vercel.app"
 ]
 logger.info(f"Разрешенные источники CORS: {allowed_origins}")
 
